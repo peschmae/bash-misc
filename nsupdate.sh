@@ -57,15 +57,18 @@ WGET=$(command -v wget)
 ECHO=$(command -v echo)
 NSUPDATE=$(command -v nsupdate)
 
-IP=$($WGET -q -O - https://api.ipify.org)
 KEYFILECONTENT=$(cat "$KEYFILE")
 if [ "$KEYFILECONTENT" == "" ]; then
         $ECHO "KEY FILE EMPTY. ABORT"
         exit 1;
 fi
 
-$ECHO "server $SERVER" > /tmp/nsupdate
-$ECHO "key $KEYNAME $KEYFILECONTENT" >> /tmp/nsupdate
+IP=$($WGET -q -O - https://api.ipify.org)
+
+{
+    $ECHO "server $SERVER"
+    $ECHO "key $KEYNAME $KEYFILECONTENT"
+} > /tmp/nsupdate
 if [ "$DEBUG" = true ]; then
         $ECHO "debug yes" >> /tmp/nsupdate
 fi
