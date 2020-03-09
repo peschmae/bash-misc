@@ -7,8 +7,8 @@
 
 set -e
 
-__usage="
-Usage: $(basename $0) [OPTIONS]
+usage="
+Usage: $(basename "$0") [OPTIONS]
 
 Options:
   -d, --directory              Directory to scan for guest files, all found guests will be started, this is a mandatory option
@@ -18,7 +18,7 @@ Options:
 
 if [ -z "$1" ]
 then
-    echo "$__usage"
+    echo "$usage"
     exit 1
 fi
 
@@ -39,7 +39,7 @@ done
 if [ -z "$VM_FOLDER" ]
 then
     echo "No directory provided, aborting"
-    echo "$__usage"
+    echo "$usage"
     exit 1
 fi
 
