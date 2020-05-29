@@ -40,12 +40,13 @@ $ECHO "creating client config"
 	$ECHO "AllowedIPs = $INTERNAL_IP_RANGE"
 	$ECHO "Endpoint = $EXTERNAL_ENDPOINT"
 	$ECHO "PersistentKeepalive = 21"
-	
+
 } > "$CLIENT_DIR/$CLIENT_NAME.config"
 
 $ECHO "$CLIENT_DIR/$CLIENT_NAME.config created"
 
 $READ -p "Do you want to display the config as QR-Code? (Y/n)" -i Y input
+# shellcheck disable=SC2154
 if [[ $input == "Y" || $input == "y" ]]; then
 	qrencode -t ansiutf8 < "$CLIENT_DIR/$CLIENT_NAME.config"
 fi
