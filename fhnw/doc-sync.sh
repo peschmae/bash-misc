@@ -22,7 +22,7 @@ then
   echo "No directories provided"
   exit 1
 else
-  directory_list=$(cat $DIRECTORIES)
+  directory_list=$(cat "$DIRECTORIES")
   # echo "Synching folders: $directory_list"
 fi
 
@@ -47,15 +47,15 @@ then
 fi
 
 # connect to the VPN, using the password file
-openconnect -b --user="<firstname.lastname>@students.fhnw.ch" vpn.fhnw.ch < /<file_with_vpn_password>
+openconnect -b --user="dilli.gaf@students.fhnw.ch" vpn.fhnw.ch < /tmp/vpn-credentials
 
 # mount fhnw-share
-mount -t cifs //fs.edu.ds.fhnw.ch/data/HT /mnt/fhnw-share -o credentials=<file_with_cifs_credentials>
+mount -t cifs //fs.edu.ds.fhnw.ch/data/HT /mnt/fhnw-share -o credentials=/tmp/mnt-credentials
 
 # rsync a list of folders defined above
 OLDIFS=$IFS
 IFS=';'
-while read dest source
+while read -r dest source
 do
   echo "synching $dest to $source"
   echo rsync -rltD "/mnt/fhnw-share/$source/" "/mnt/fhnw/$dest"
