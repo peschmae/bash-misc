@@ -14,6 +14,7 @@ MAIN_FOLDER=Betriebssysteme
 ## FIXED VARS
 MNT_FHNW="/mnt/fhnw"
 SYNC_DEST="$MNT_FHNW/$SEMESTER/$MODULE_TYPE/$CLASS/$MODULE"
+MAX_FILE_SIZE=100M
 
 wget -O "$MODULE-sync.zip" "$DOWNLOAD_URL"
 
@@ -21,7 +22,7 @@ unzip "$MODULE-sync.zip"
 
 cd $MAIN_FOLDER || exit
 
-rsync -rl . "$SYNC_DEST"
+rsync -rl --exclude=".[!.]*" --max-size="$MAX_FILE_SIZE" . "$SYNC_DEST"
 
 # CLEANUP
 cd .. || exit

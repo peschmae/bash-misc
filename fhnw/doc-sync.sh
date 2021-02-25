@@ -18,11 +18,11 @@ mount -t cifs //fs.edu.ds.fhnw.ch/data/HT/E1811_Unterrichte_Bachelor/ /mnt/fhnw-
 
 # rsync a list of folders defined above
 echo "synching $PATH_KONTEXT to $DESTINATION"
-echo rsync -rltD --exclude=".[!.]*" --max-size=50M "$BASE_SOURCE/$PATH_KONTEXT/*" "$DESTINATION/kontext"
+echo rsync -rltD --exclude=".[!.]*" --max-size="$MAX_FILE_SIZE" "$BASE_SOURCE/$PATH_KONTEXT/*" "$DESTINATION/kontext"
 rsync -rltD --exclude=".[!.]*" --max-size="$MAX_FILE_SIZE" "$BASE_SOURCE/$PATH_KONTEXT/*" "$DESTINATION/kontext"
 
 echo "synching $PATH_I to $DESTINATION"
-echo rsync -rltD --exclude=".[!.]*" --max-size=50M "$BASE_SOURCE/$PATH_I/" "$DESTINATION/informatik"
+echo rsync -rltD --exclude=".[!.]*" --max-size="$MAX_FILE_SIZE" "$BASE_SOURCE/$PATH_I/" "$DESTINATION/informatik"
 rsync -rltD --exclude=".[!.]*" --max-size="$MAX_FILE_SIZE" "$BASE_SOURCE/$PATH_I/" "$DESTINATION/informatik"
 
 # kill vpn
