@@ -26,3 +26,8 @@ _Show physical drives_
 /opt/MegaRAID/MegaCli/MegaCli64 -PDInfo -PhysDrv [E:S] -aALL
 ```
 More Stuff: http://erikimh.com/megacli-cheatsheet/
+
+### rdiff Backup
+```
+/root/rdiff-backup/bin/rdiff-backup -v 5 --print-statistics --remote-schema "ssh -C -p 22 %s /<path-to-rdiff-env>/rdiff-env/bin/rdiff-backup --server" --exclude-globbing-filelist /root/syno-excludelist  <user>@<host>::"/volume1/ebooks" /backup/ebooks/ | /usr/bin/logger -t rdiff-backup
+```
