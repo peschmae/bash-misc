@@ -1,0 +1,37 @@
+#cloud-config
+hostname: ##VM_NAME##
+fqdn: ##VM_NAME##.<NETWORK_DOMAIN_NAME>
+manage_etc_hosts: true
+# generates new ssh keys
+ssh_deletekeys: true
+ssh_genkeytypes: 
+  - rsa
+  - dsa
+  - ecdsa
+  - ed25519
+users:
+  - name: <USER>
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: users, sudo
+    home: /home/<USER>
+    shell: /bin/bash
+    lock_passwd: false
+    ssh-authorized-keys:
+      - <A_KEY>
+      - <MORE_KEYS>
+# only cert auth via ssh (console access can still login)
+ssh_pwauth: false
+disable_root: false
+chpasswd:
+  list: |
+     root:<PASSWORD>
+     <CUSTOM_USER>:<PASSWORD>
+  expire: False
+package_update: true
+package_upgrade: true
+packages:
+  - qemu-guest-agent
+  - netcat
+  - dnsutils
+# written to /var/log/cloud-init-output.log
+final_message: "The system is finally up, after $UPTIME seconds"
