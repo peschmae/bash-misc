@@ -64,13 +64,13 @@ sleep 5s
 
 # rsync a list of folders defined above
 echo "synching $PATH_KONTEXT to $DESTINATION"
-echo rsync -vrltD --exclude=".[!.]*" --max-size="$MAX_FILE_SIZE" "$BASE_SOURCE/$PATH_KONTEXT/" "$DESTINATION/kontext"
-rsync -vrltD --exclude=".[!.]*" --max-size="$MAX_FILE_SIZE" "$BASE_SOURCE/$PATH_KONTEXT/" "$DESTINATION/kontext"
+echo rsync -vrltD --exclude=".[!.]*" --exclude="*.lnk" --max-size="$MAX_FILE_SIZE" "$BASE_SOURCE/$PATH_KONTEXT/" "$DESTINATION/kontext"
+rsync -vrltD --exclude=".[!.]*" --exclude="*.lnk" --max-size="$MAX_FILE_SIZE" "$BASE_SOURCE/$PATH_KONTEXT/" "$DESTINATION/kontext"
 sleep 5s
 
 echo "synching $PATH_I to $DESTINATION"
-echo rsync -vrltD --exclude=".[!.]*" --max-size="$MAX_FILE_SIZE" "$BASE_SOURCE/$PATH_I/" "$DESTINATION/informatik"
-rsync -vrltD --exclude=".[!.]*" --max-size="$MAX_FILE_SIZE" "$BASE_SOURCE/$PATH_I/" "$DESTINATION/informatik"
+echo rsync -vrltD --exclude=".[!.]*" --exclude="*.lnk" --max-size="$MAX_FILE_SIZE" "$BASE_SOURCE/$PATH_I/" "$DESTINATION/informatik"
+rsync -vrltD --exclude=".[!.]*" --exclude="*.lnk" --max-size="$MAX_FILE_SIZE" "$BASE_SOURCE/$PATH_I/" "$DESTINATION/informatik"
 sleep 5s
 
 
