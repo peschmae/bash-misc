@@ -1,26 +1,64 @@
 #! /bin/bash
 
+
 set -e
 trap 'catch' ERR
 
-
-# Internals
-VPN_PID_FILE="/tmp/vpn.pid"
-
 unmountShare() {
   echo "unmounting share"
-  umount /mnt/fhnw-share
+  sudo umount /mnt/fhnw-share
   sleep 5s
 }
 
+loginVpn() {
+    # open vpnui in background
+    /opt/cisco/anyconnect/bin/vpnui &
+
+    # wait for login window to appear
+    sleep 5
+
+    # source credentials
+    . vpn_credentials
+
+    # enter username into login window
+    xdotool search --name "cisco anyconnect login" windowactivate %1
+    xdotool type $VPN_USERNAME
+    xdotool key 0xff0d
+
+    sleep 3
+
+    # enter password into login window
+    xdotool type $VPN_PASSWORD
+    xdotool key 0xff0d
+
+    sleep 3
+
+    # generate totp token and enter into login fomr
+    otp_token=$(oathtool -b --totp $TOTP_SECRET)
+
+    xdotool type $otp_token
+    xdotool key 0xff0d
+
+    sleep 2
+    # accept "remember me dialog"
+    xdotool key 0xff0d
+}
+
 closeVpn() {
-  echo "kill openconnect using sigint"
-  kill -SIGINT $(<$VPN_PID_FILE)
+  # send SIQQUIT to vpnagentd process to properly disconnect
+    # needs a passwordless sudo entry
+    vpnagent_pid=$(ps -ef | grep vpnagentd | grep -v 'grep' | awk '{print $2}')
+
+    sudo kill -3 $vpnagent_pid
+
+    # kill vpnui to allow a new connection later on
+    sudo pkill vpnui
 }
 
 catch() {
-  echo "custom_fhnw_sync_success 0" > /var/lib/node_exporter/fhnw_sync_success.prom
-  echo "custom_fhnw_sync_last_run $(date +%s)" > /var/lib/node_exporter/fhnw_sync_success.prom
+  # remove this, if not using prometheus / node_exporter
+  echo "custom_fhnw_sync_success 0" | sudo tee /var/lib/node_exporter/fhnw_sync_success.prom
+  echo "custom_fhnw_sync_last_run $(date +%s)" | sudo tee -a /var/lib/node_exporter/fhnw_sync_success.prom
   echo "An error has occured during FHNW sync, but we trapped it"
 
   if [ -d $BASE_SOURCE ];
@@ -28,14 +66,11 @@ catch() {
     unmountShare
   fi
 
-  if [ -f $VPN_PID_FILE ];
-  then
-    closeVpn
-  fi
+  closeVpn
 }
 
 
-SEMESTER=2021-hs
+SEMESTER=2022-fs
 
 DESTINATION="/mnt/nextcloud/$SEMESTER"
 
@@ -44,40 +79,33 @@ BASE_SOURCE=/mnt/fhnw-share/E1811_Unterrichte_Bachelor
 PATH_KONTEXT=E1811_Unterrichte_Kontext
 PATH_I=E1811_Unterrichte_I
 
-
-if [ -f $VPN_PID_FILE ];
-then
-    echo "custom_fhnw_sync_success 0" > /var/lib/node_exporter/fhnw_sync_success.prom
-    echo "VPN pid file exists, aborting"
-    exit 1
-fi
-
 # connect to the VPN, using the password file
 echo "Opening VPN connection"
-/usr/sbin/openconnect -v --timestamp -b --pid-file $VPN_PID_FILE --user="dilli.gaf@students.fhnw.ch" vpn.fhnw.ch < /tmp/vpn-password
+loginVpn
 sleep 15s
 
 # mount fhnw-share
 echo "Mounting share"
-mount -t cifs //fs.edu.ds.fhnw.ch/data/HT/ /mnt/fhnw-share -o credentials=/root/fhnw-credentials,vers=3.0
+sudo mount -t cifs //fs.edu.ds.fhnw.ch/data/HT/ /mnt/fhnw-share -o credentials=/tmp/fhnw-credentials,vers=3.0
 sleep 5s
 
 # rsync a list of folders defined above
 echo "synching $PATH_KONTEXT to $DESTINATION"
 echo rsync -vrltD --exclude=".[!.]*" --exclude="*.lnk" --max-size="$MAX_FILE_SIZE" "$BASE_SOURCE/$PATH_KONTEXT/" "$DESTINATION/kontext"
-rsync -vrltD --exclude=".[!.]*" --exclude="*.lnk" --max-size="$MAX_FILE_SIZE" "$BASE_SOURCE/$PATH_KONTEXT/" "$DESTINATION/kontext"
+sudo rsync -vrltD --exclude=".[!.]*" --exclude="*.lnk" --max-size="$MAX_FILE_SIZE" "$BASE_SOURCE/$PATH_KONTEXT/" "$DESTINATION/kontext"
 sleep 5s
 
 echo "synching $PATH_I to $DESTINATION"
 echo rsync -vrltD --exclude=".[!.]*" --exclude="*.lnk" --max-size="$MAX_FILE_SIZE" "$BASE_SOURCE/$PATH_I/" "$DESTINATION/informatik"
-rsync -vrltD --exclude=".[!.]*" --exclude="*.lnk" --max-size="$MAX_FILE_SIZE" "$BASE_SOURCE/$PATH_I/" "$DESTINATION/informatik"
+sudo rsync -vrltD --exclude=".[!.]*" --exclude="*.lnk" --max-size="$MAX_FILE_SIZE" "$BASE_SOURCE/$PATH_I/" "$DESTINATION/informatik"
 sleep 5s
 
 
 # kill vpn
 unmountShare
 
-echo "custom_fhnw_sync_success 1" > /var/lib/node_exporter/fhnw_sync_success.prom
-echo "custom_fhnw_sync_last_run $(date +%s)" > /var/lib/node_exporter/fhnw_sync_success.prom
+# remove this, if not using prometheus / node_exporter
+echo "custom_fhnw_sync_success 1" | sudo tee /var/lib/node_exporter/fhnw_sync_success.prom
+echo "custom_fhnw_sync_last_run $(date +%s)" | sudo tee -a /var/lib/node_exporter/fhnw_sync_success.prom
 
 closeVpn
