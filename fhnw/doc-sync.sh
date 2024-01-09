@@ -2,7 +2,7 @@
 
 
 set -e
-trap 'catch' ERR
+trap 'catch $LINENO' ERR
 
 unmountShare() {
   echo "unmounting share"
@@ -22,13 +22,14 @@ loginVpn() {
     . vpn_credentials
 
     # enter username into login window
-    xdotool search --name "cisco anyconnect login" windowactivate %1
+    xdotool search --name "cisco secureclient login" windowactivate %1
 #    xdotool type $VPN_USERNAME
     xdotool key 0xff0d
 
     sleep 3
 
     # enter password into login window
+    # would be great to detect if it's the password or 2FA question...
     xdotool type $VPN_PASSWORD
     xdotool key 0xff0d
 
@@ -60,7 +61,7 @@ closeVpn() {
 catch() {
   echo "custom_fhnw_sync_success 0" | sudo tee /var/lib/node_exporter/fhnw_sync_success.prom
   echo "custom_fhnw_sync_last_run $(date +%s)" | sudo tee -a /var/lib/node_exporter/fhnw_sync_success.prom
-  echo "An error has occured during FHNW sync, but we trapped it"
+  echo "An error has occured during FHNW sync, but we trapped it. Error on line $1"
 
   if [ -d $BASE_SOURCE ];
   then
