@@ -53,35 +53,25 @@ while [ "$1" != "" ]; do
     shift
 done
 
-WGET=$(command -v wget)
-ECHO=$(command -v echo)
-NSUPDATE=$(command -v nsupdate)
+WGET=$(which wget)
+ECHO=$(which echo)
+NSUPDATE=$(which nsupdate)
 
-KEYFILECONTENT=$(cat "$KEYFILE")
+IP=$($WGET -q -O - ip.ddyn.ch)
+KEYFILECONTENT=$(cat $KEYFILE)
 if [ "$KEYFILECONTENT" == "" ]; then
         $ECHO "KEY FILE EMPTY. ABORT"
         exit 1;
 fi
 
-IP=$($WGET -q -O - https://api.ipify.org)
-
-{
-    $ECHO "server $SERVER"
-    $ECHO "key $KEYNAME $KEYFILECONTENT"
-} > /tmp/nsupdate
+$ECHO "server $SERVER" > /tmp/nsupdate
+$ECHO "key $KEYNAME $KEYFILECONTENT" >> /tmp/nsupdate
 if [ "$DEBUG" = true ]; then
         $ECHO "debug yes" >> /tmp/nsupdate
 fi
-{
-    $ECHO "zone $ZONE"
-    $ECHO "update delete $DOMAIN"
-    $ECHO "update add $DOMAIN $TTL A $IP"
-    $ECHO "send"
-} >> /tmp/nsupdate
+$ECHO "zone $ZONE" >> /tmp/nsupdate
+$ECHO "update delete $DOMAIN" >> /tmp/nsupdate
+$ECHO "update add $DOMAIN $TTL A $IP" >> /tmp/nsupdate
+$ECHO "send" >> /tmp/nsupdate
 
-if [ "$DEBUG" = true ]; then
-        $ECHO "Content of /tmp/nsupdate"
-        cat /tmp/nsupdate
-fi
-
-$NSUPDATE /tmp/nsupdate
+cat /tmp/nsupdate | nsupdate
